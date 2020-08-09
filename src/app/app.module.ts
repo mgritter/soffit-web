@@ -4,10 +4,12 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { GraphOutputComponent } from './graph-output/graph-output.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    GraphOutputComponent
   ],
   imports: [
       BrowserModule,
