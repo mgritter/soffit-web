@@ -119,6 +119,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "soffit-web"
+    }
+  },
+  "defaultProject": "soffit-web",
+  "cli": {
+    "analytics": "7ad86ecc-7821-4e30-a9e5-dae4595df855"
+  }
 }
