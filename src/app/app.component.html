@@ -1,5 +1,11 @@
 <h2>{{title}}</h2>
 
-<app-graph-output #output></app-graph-output>
+<h3>Rules</h3>
+
+<app-graph-rule [show_edit]=true></app-graph-rule>
+
+<h3>Result</h3>
+
+<app-graph-output #output [show_node_names]=false></app-graph-output>
 
 <router-outlet></router-outlet>

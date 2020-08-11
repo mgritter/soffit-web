@@ -1,6 +1,7 @@
 import { Component, OnInit, Injectable, ViewChild } from '@angular/core';
 import { SoffitApiService, GrammarResponse } from './soffit-api.service'
 import { GraphOutputComponent } from './graph-output/graph-output.component'
+import { GraphRuleComponent } from './graph-rule/graph-rule.component'
          
 @Component({
   selector: 'app-root',
@@ -15,6 +16,7 @@ export class AppComponent implements OnInit {
     constructor( private api : SoffitApiService ) {}
     
     @ViewChild(GraphOutputComponent) output : GraphOutputComponent;
+    @ViewChild(GraphRuleComponent) rule1 : GraphRuleComponent;
 
     title = 'Soffit Web';
 
@@ -22,9 +24,13 @@ export class AppComponent implements OnInit {
     }
     
     ngAfterViewInit() : void {
-        var grammar = {
-            "N[leaf]" : "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2"
-        }
+        var left1 = "N[leaf]";
+        var right1 = "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2";
+
+        this.rule1.setRule( left1, right1 );
+            
+        var grammar = {}
+        grammar[left1] = right1
         var graph : string = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
 
         let out_component = this.output

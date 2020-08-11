@@ -1,0 +1,11 @@
+<table width="100%">
+  <tr *ngIf="show_edit">
+    <td><input type="textarea" rows="1" cols="40" [formControl]="rule_left"></td>
+    <td><input type="textarea" rows="1" cols="40" [formControl]="rule_right"></td>
+  </tr>
+  <tr>
+    <td><app-graph-output #left [show_node_names]=true></app-graph-output></td>
+    <td><app-graph-output #right [show_node_names]=true></app-graph-output></td>
+  </tr>
+</table>
+
