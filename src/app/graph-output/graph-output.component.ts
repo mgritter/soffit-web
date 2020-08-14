@@ -1,8 +1,137 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
+import type { PEG } from 'pegjs'
 
 declare var d3: any;
 
-function soffitToDot( g : string ) : string {
+import * as parser from '../../assets/js/soffit-grammar';
+
+class Node {
+    id: string;
+    tag: string;
+    merged_nodes: Map<string,string>;
+};
+
+class Edge {
+    src: string;
+    dst: string;
+    tag: string;
+};
+
+class Graph {
+    directed: boolean;
+    merge: Map<string,string>;
+    nodes: Map<string,Node>;
+    edges: Edge[]
+
+    // Crappy union-find implementation.
+    add_set( s: string ) : void {
+        if ( this.merge.get( s ) === undefined ) {
+            this.merge.set( s, s );
+        }
+    }
+    
+    find( s : string ) : string {
+        var curr : string = s;
+        while ( true ) {
+            var next : string = this.merge.get( curr );
+            if (next === undefined) {
+                return curr;
+            }
+            if (next == curr) {
+                if (curr != s ) {
+                    this.merge.set( s, curr );
+                }
+                return curr;
+            }
+            curr = next;
+        }
+    }
+
+    union( a : string, b : string ) : void {
+        let a_set : string = this.find( a );
+        let b_set : string = this.find( b );
+        // Let the tree grow large, who cares?
+        this.merge.set( a_set, b_set );
+    }
+};
+
+function parseSoffitGraph( orig : string ) : Graph {
+    var elems = parser.parse( orig ); // Might throw syntax error
+    var g = new Graph()
+    g.directed = false;
+    g.nodes = new Map<string,Node>();
+    g.edges = [];
+    g.merge = new Map<string,string>();
+    
+    // Find all merges first
+    for ( let e of elems ) {
+        if ( e['type'] == 'node' ) {
+            g.add_set( e['id'] )
+            for ( let m of e['merge'] ) {
+                g.add_set( m );
+                g.union( m, e['id'] );
+            }
+        }
+    }
+    // Then add all object to the graph
+    for ( let e of elems ) {
+        if ( e['type'] == 'node' ) {
+            let m = g.find( e['id'] )
+            // console.log( "Canonical name for " + e['id'] + " is " + m )
+            let n = g.nodes.get( m );
+            if ( n === undefined ) {
+                n = new Node();
+                n.id = m;
+                if ( e['tag'] == null ) {
+                    n.tag = "";;
+                } else {
+                    n.tag = e['tag'];
+                }
+                n.merged_nodes = new Map();
+                g.nodes.set( m, n )
+            }
+            if ( n.id != e['id'] ) {
+                if ( n.tag == "" && e['tag'] != null && e['tag'] != "" ) {
+                    // FIXME: is this an error in real Soffit?
+                    n.tag = e.tag;
+                }
+                n.merged_nodes.set( e['id'],  e['id'] );
+            }
+            for ( let m of e['merge'] ) {
+                if ( m != n.id ) {
+                    n.merged_nodes.set( m, m );
+                }
+            }
+        } else if ( e['type'] == 'edge' ) {
+            let src : string = e['src'];
+            for ( let target of e['dests'] ) {
+                let edge = new Edge();
+                if ( target['direction'] == '--' ) {
+                    edge.src = g.find( src );
+                    edge.dst = g.find( target['node'] );
+                } else if ( target['direction'] == '->' ) {
+                    g.directed = true;
+                    edge.src = g.find( src );
+                    edge.dst = g.find( target['node'] );
+                } else if ( target['direction'] == '<-' ) {
+                    g.directed = true;
+                    edge.src = g.find( target['node'] );  // swapped
+                    edge.dst = g.find( src );
+                }
+                if ( e['tag'] == null ) {
+                    edge.tag = "";
+                } else {
+                    edge.tag = e['tag'];
+                }
+                g.edges.push( edge );
+                src = target['node'];
+            }
+        }
+    }
+    return g;
+}
+
+function old_soffitToDot( g : string ) : string {
     let elements : string[] = g.split( ";" );
     let directed : boolean = true;
 
@@ -34,27 +163,40 @@ function soffitIsEdge( g : string ) {
     return g.includes( "->" ) || g.includes( "--" ) || g.includes( "<-" )
 }
 
-function soffitToDotWithNodeNames( g : string ) : string {
-    let elements : string[] = g.split( ";" );
-    let directed : boolean = true;
+function soffitToDot( g : string, show_ids : boolean ) : string {
+    let x = parseSoffitGraph( g ) 
+    let elements : string[] = [];
+    for ( const kv of x.nodes ) {
+        const n = kv[1];
+        let mergedNodes = n.id;
+        for ( let m of n.merged_nodes ) {
+            mergedNodes += "^" + m[0];
+        }
+        var attributes = "";
+        if ( show_ids ) {
+            // TODO: quote tag?
+            attributes = '[label="' + mergedNodes + "\\n" + n.tag + '"]';
+        } else if ( n.tag.includes( "=" ) ) {
+            attributes = '[' + n.tag + ']';
+        } else {
+            attributes = '[label="' + n.tag + '"]';
+        }
+        elements.push( '"' + n.id + '" ' + attributes )
+    }
 
-    let processed : string[] = elements.map( item => {
-        let tokens : string[] = item.split( /[\[\]]/ )
-        if ( tokens[0].includes( "->" ) ) {
-            directed = true;
+    for ( let e of x.edges ) {
+        console.log( "Edge " + e );
+        if ( x.directed ) {
+            elements.push( '"' + e.src + '"->"' + e.dst + '" [label="' + e.tag + '"]' );
+        } else {
+            elements.push( '"' + e.src + '"--"' + e.dst + '" [label="' + e.tag + '"]' );
         }
-        if ( tokens.length == 1 ) {
-            // No tag
-            return item
-        }
-        let tag : string = tokens[1];
-        return tokens[0] + ' [label="' + tokens[0] + '\n' + tokens[1] + '"]\n';
-    })
+    }
     
-    if ( directed ) {
-        return "digraph {\n" + processed.join( "" ) + "}\n";
+    if ( x.directed ) {
+        return "digraph {\n" + elements.join( "\n" ) + "}\n";
     } else {
-        return "graph {\n" + processed.join( "" ) + "}\n";
+        return "graph {\n" + elements.join( "\n" ) + "}\n";
     }
 }
 
@@ -68,6 +210,8 @@ export class GraphOutputComponent implements OnInit {
     constructor() { }
 
     nodeList = []
+    show_error = false
+    error_html = ""
     
     @ViewChild('output_div') output_div;
 
@@ -83,53 +227,21 @@ export class GraphOutputComponent implements OnInit {
         // console.log( "Rendering " + graph )
         // console.log( "To object: " + this.output_div + " " + this.output_div.nativeElement )
         var myElement = this
-        myElement.output_div.nativeElement.innerHTML = ""
 
+        this.show_error = false
         var viz = d3.select( this.output_div.nativeElement ).graphviz()
-        //viz.on( 'dataProcessEnd', function() {
-        //    myElement.update_nodeList( this.data() );
-        //})
         viz.onerror( (err) => {
-            myElement.output_div.nativeElement.innerHTML = err
+            this.show_error = true
+            this.error_html = err
             console.log( "Dot parsing error: " + err )
         })
-        if ( this.show_node_names ) {
-            viz.renderDot( soffitToDotWithNodeNames( graph ) )
-        } else {
-            viz.renderDot( soffitToDot( graph ) )
+        try {
+            let dot = soffitToDot( graph, this.show_node_names );
+            console.log( "DOT file: " + dot );
+            viz.renderDot( dot );
+        } catch ( err ) {
+            this.show_error = true
+            this.error_html = "" + err
         }
-    }
-
-    update_nodeList(data) {
-        if (!("children" in data)) {
-            return [];
-        }
-        var nodes = [];
-        
-        // This code sucks, don't do it this way,
-        // I was trying to get titles, but they're buried even one level deeper,
-        // as #text nodes *within* the title elmement.
-        for ( var i in data.children ) {
-            var g = data.children[i];
-            // for ( var a in g.attributes ) {
-            //    console.log( "Child attribute: " + a + "=" + g.attributes[a] )            
-            // }
-            if ( g.attributes["class"] == "graph" ) {
-                for ( var i2 in g.children ) {
-                    var n = g.children[i2];
-                    if ( n.attributes["class"] == "node" ) {
-                        for ( var i3 in n.children ) {
-                            var elem = n.children[i3];
-                            if ( elem.tag == "title" ) {
-                                for ( var a in elem ) {
-                                    console.log( "Title attribute: " + a + "=" + elem[a] )                                      }
-                            }
-                        }
-                        nodes.push( n )
-                    }
-                }
-            }
-        }
-        this.nodeList = nodes;
     }
 }

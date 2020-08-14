@@ -33,11 +33,13 @@ export class AppComponent implements OnInit {
         grammar[left1] = right1
         var graph : string = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
 
+/*
         let out_component = this.output
         this.api.runGrammar( grammar, graph, 5 ).subscribe( {
             next( g : GrammarResponse ) {
                 out_component.soffitGraph( g.graph )
             }
         } )
+*/
     }
 }

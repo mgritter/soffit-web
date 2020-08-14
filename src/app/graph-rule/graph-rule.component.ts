@@ -22,6 +22,14 @@ export class GraphRuleComponent implements OnInit {
         this.rule_left.setValue( left )
         this.rule_right.setValue( right )
     }
+
+    getLeft() : string {
+        return this.rule_left.value
+    }
+
+    getRight() : string {
+        return this.rule_right.value
+    }
     
     @ViewChild('left') output_left : GraphOutputComponent;
     @ViewChild('right') output_right : GraphOutputComponent;

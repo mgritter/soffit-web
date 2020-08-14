@@ -65,6 +65,7 @@ export class SoffitApiService {
                 },
                 error( err ) {
                     console.error( "API error: " + err.message )
+                    subscriber.error( err )
                 }
             } )
         })
