@@ -185,7 +185,6 @@ function soffitToDot( g : string, show_ids : boolean ) : string {
     }
 
     for ( let e of x.edges ) {
-        console.log( "Edge " + e );
         if ( x.directed ) {
             elements.push( '"' + e.src + '"->"' + e.dst + '" [label="' + e.tag + '"]' );
         } else {
@@ -209,7 +208,6 @@ function soffitToDot( g : string, show_ids : boolean ) : string {
 export class GraphOutputComponent implements OnInit {
     constructor() { }
 
-    nodeList = []
     show_error = false
     error_html = ""
     
@@ -223,13 +221,18 @@ export class GraphOutputComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    @Input() max_width : number = 0;
+    @Input() max_height : number = 0;
+    width : number = 0;
+    height : number = 0;
+    
     soffitGraph( graph : string ) : void {
         // console.log( "Rendering " + graph )
         // console.log( "To object: " + this.output_div + " " + this.output_div.nativeElement )
         var myElement = this
 
         this.show_error = false
-        var viz = d3.select( this.output_div.nativeElement ).graphviz()
+        var viz = d3.select( this.output_div.nativeElement ).graphviz();
         viz.onerror( (err) => {
             this.show_error = true
             this.error_html = err
@@ -237,8 +240,35 @@ export class GraphOutputComponent implements OnInit {
         })
         try {
             let dot = soffitToDot( graph, this.show_node_names );
-            console.log( "DOT file: " + dot );
-            viz.renderDot( dot );
+            // console.log( "DOT file: " + dot );
+            if ( viz.data() != null ) { 
+                viz.resetZoom();
+            }
+            // Auto-size
+            viz.width( null );
+            viz.height( null );
+            viz.dot( dot, function() {
+                var svg = viz.data()
+                var svg_width = Number( svg.attributes["width"].split( "pt" )[0] ) * 1.33;
+                var svg_height = Number( svg.attributes["height"].split( "pt" )[0] ) * 1.33;
+                myElement.width = svg_width;
+                myElement.height = svg_height;
+                var layout_again = false;
+                if ( myElement.max_width != 0 && svg_width > myElement.max_width ) {
+                    viz.width( myElement.max_width );
+                    layout_again = true;
+                }
+                if ( myElement.max_height != 0 && svg_height > myElement.max_height ) {
+                    viz.height( myElement.max_height );
+                    layout_again = true;
+                }
+                if ( layout_again ) {
+                    viz.fit( true );
+                    viz.renderDot( dot );
+                } else {
+                    viz.render();
+                }
+            })
         } catch ( err ) {
             this.show_error = true
             this.error_html = "" + err

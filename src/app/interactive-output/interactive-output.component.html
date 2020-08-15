@@ -1,4 +1,4 @@
-<div class="outer">
+<div class="outer" #outer_div>
 <div class="controls">
   <button [class]="showhide_button_class" (click)="toggle_start_graph()">{{toggle_text}}</button>
   <span class="iteration_span">Iteration: {{iteration}}</span>
@@ -10,7 +10,7 @@
 </div>
 <div [class]="starting_graph_class">
   <h3>Starting graph</h3>
-  <app-graph-output #start [show_node_names]=false></app-graph-output>
+  <app-graph-output #start [show_node_names]=false [max_width]=300></app-graph-output>
 </div>
 <div [class]="result_graph_class">
   <h3>Result</h3>

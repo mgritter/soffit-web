@@ -43,9 +43,13 @@ button.plus_enabled {
 }
 
 button.plus_disabled {
+    color: lightgray;
+    background-color: gray;
+    width: 60pt;
 }
 
 span.message {
+    padding: 10px;
     color: red;
 }
 

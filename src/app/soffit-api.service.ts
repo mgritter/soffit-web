@@ -55,9 +55,11 @@ export class SoffitApiService {
                     var result : GrammarResponse = new GrammarResponse();
                     result.graph = r.graph
                     result.iteration = r.iteration
+                    console.log( r )
                     if ( r.message == "Stopped due to iteration limit" ) {
                         result.stopped = false
                     } else {
+                        console.log( "Message: " + r.message )
                         result.stopped = true
                     }
                     subscriber.next( result )
@@ -65,7 +67,11 @@ export class SoffitApiService {
                 },
                 error( err ) {
                     console.error( "API error: " + err.message )
-                    subscriber.error( err )
+                    if ( err.error === undefined ) {
+                        subscriber.error( err )
+                    } else {
+                        subscriber.error( err.error )
+                    }
                 }
             } )
         })

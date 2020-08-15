@@ -2,6 +2,12 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { GraphOutputComponent } from '../graph-output/graph-output.component'
 import { SoffitApiService, GrammarResponse } from '../soffit-api.service'
 
+enum ApiState {
+    Ready,
+    WaitingForResponse,
+    NoMoreIterations
+};
+
 @Component({
   selector: 'app-interactive-output',
   templateUrl: './interactive-output.component.html',
@@ -12,6 +18,7 @@ export class InteractiveOutputComponent implements OnInit {
 
     @ViewChild('start') start : GraphOutputComponent;
     @ViewChild('result') result : GraphOutputComponent;
+    @ViewChild('outer_div') outer_div;
 
     startGraphSoffit = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
     resultGraphSoffit = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
@@ -42,15 +49,51 @@ export class InteractiveOutputComponent implements OnInit {
         }
     }
 
+    state : ApiState = ApiState.Ready
+    iteration = 0
     message = ""
+
+    changeApiState( new_state : ApiState ) : void {
+        this.state = new_state;
+        switch (this.state) {
+            case ApiState.Ready:
+                this.plus_button_class = "plus_enabled";
+                this.message = "";
+                break;
+            case ApiState.WaitingForResponse:
+                this.plus_button_class = "plus_disabled";
+                this.message = "Waiting for response.";
+                break;
+             case ApiState.NoMoreIterations:
+                this.plus_button_class = "plus_disabled";
+                this.message = "No more matches.";
+        }
+    }
     
     reset_graph() {
+        if ( this.state == ApiState.WaitingForResponse ) {
+            // I don't know how to cancel the API call, so
+            // this is better than having the response revert the reset?
+            return
+        }
+        this.iteration = 0
+        this.resultGraphSoffit = this.startGraphSoffit
+        this.start.soffitGraph( this.startGraphSoffit )
+        this.result.soffitGraph( this.resultGraphSoffit )
+        this.changeApiState( ApiState.Ready );
     }
 
-    iteration = 0
-    stopped = false
     
     iterate( num_steps : number ) {
+        this.changeApiState( ApiState.WaitingForResponse );
+
+        // Calculate a max_width for the graph.
+        var max_width = this.outer_div.nativeElement.offsetWidth;
+        if ( this.show_start_graph ) {
+            max_width -= this.start.width;
+        }
+        this.result.max_width = max_width;
+        
         let component = this;
         this.api.runGrammar( this.grammar, this.resultGraphSoffit, num_steps)
             .subscribe( {
@@ -59,13 +102,24 @@ export class InteractiveOutputComponent implements OnInit {
                     component.result.soffitGraph( g.graph );
                     component.iteration += g.iteration
                     if ( g.stopped ) {
-                        component.message = "No more matches";
-                        component.stopped = true
-                        component.plus_button_class = "plus_disabled";
+                        component.changeApiState( ApiState.NoMoreIterations );
+                    } else {
+                        component.changeApiState( ApiState.Ready );
                     }
                 },
                 error( err ) {
-                    this.message = "Error: " + err
+                    component.changeApiState( ApiState.Ready );
+                    if ( err.error != undefined ) {
+                        component.message = err.error
+                        if ( err.grammarError != undefined ) {
+                            component.message += "\n" + err.grammarError;
+                        }
+                        if ( err.parseError != undefined ) {
+                            component.message += "\n" + err.parseError;
+                        }
+                    } else {
+                        component.message = "Error: " + err.message
+                    }
                 }
             } )
     }                                                  
