@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { GraphOutputComponent } from '../graph-output/graph-output.component'
+import { SoffitTextareaComponent } from '../soffit-textarea/soffit-textarea.component'
 import { SoffitApiService, GrammarResponse } from '../soffit-api.service'
+import { debounceTime } from 'rxjs/operators';
 
 enum ApiState {
     Ready,
@@ -16,12 +18,16 @@ enum ApiState {
 export class InteractiveOutputComponent implements OnInit {
     constructor( private api : SoffitApiService ) {}
 
+    @ViewChild('start_edit') start_edit : SoffitTextareaComponent;
     @ViewChild('start') start : GraphOutputComponent;
     @ViewChild('result') result : GraphOutputComponent;
     @ViewChild('outer_div') outer_div;
 
-    startGraphSoffit = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
-    resultGraphSoffit = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
+    initStartGraph : string = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
+    startGraphSoffit : string  = "";
+    resultGraphSoffit : string  = "";
+    debugGraph : boolean = false;
+    
     grammar = {
         "N[leaf]" : "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2"
     }
@@ -69,6 +75,13 @@ export class InteractiveOutputComponent implements OnInit {
                 this.message = "No more matches.";
         }
     }
+
+    setResultToStart() {
+        // Put it in a form the API will be happy with.
+        let fixed : string = this.api.soffitToSoffit( this.startGraphSoffit );
+        this.resultGraphSoffit = fixed;
+        this.result.soffitGraph( fixed );        
+    }
     
     reset_graph() {
         if ( this.state == ApiState.WaitingForResponse ) {
@@ -77,12 +90,9 @@ export class InteractiveOutputComponent implements OnInit {
             return
         }
         this.iteration = 0
-        this.resultGraphSoffit = this.startGraphSoffit
-        this.start.soffitGraph( this.startGraphSoffit )
-        this.result.soffitGraph( this.resultGraphSoffit )
+        this.setResultToStart();
         this.changeApiState( ApiState.Ready );
     }
-
     
     iterate( num_steps : number ) {
         this.changeApiState( ApiState.WaitingForResponse );
@@ -129,7 +139,18 @@ export class InteractiveOutputComponent implements OnInit {
     }
 
     ngAfterViewInit() : void {
-        this.start.soffitGraph( this.startGraphSoffit )
-        this.result.soffitGraph( this.resultGraphSoffit )
+        let c = this;
+        this.start_edit.textObserver()
+            .pipe( debounceTime( 500 ) )
+            .subscribe( newVal => {
+                c.startGraphSoffit = newVal;
+                c.start.soffitGraph( this.startGraphSoffit );
+                if ( c.iteration == 0 ) {
+                    // Only update the result if we haven't advanced yet.
+                    c.setResultToStart();
+                }
+            } )
+
+        this.start_edit.setText( c.initStartGraph );
     }
 }

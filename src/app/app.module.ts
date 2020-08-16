@@ -8,13 +8,15 @@ import { AppComponent } from './app.component';
 import { GraphOutputComponent } from './graph-output/graph-output.component';
 import { GraphRuleComponent } from './graph-rule/graph-rule.component';
 import { InteractiveOutputComponent } from './interactive-output/interactive-output.component';
+import { SoffitTextareaComponent } from './soffit-textarea/soffit-textarea.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     GraphOutputComponent,
     GraphRuleComponent,
-    InteractiveOutputComponent
+    InteractiveOutputComponent,
+    SoffitTextareaComponent
   ],
   imports: [
       BrowserModule,

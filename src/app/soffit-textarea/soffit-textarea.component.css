@@ -1,0 +1,6 @@
+textarea.editable {
+    font-family: Tahoma, sans-serif;
+    font-size: 13px;
+    width: 95%;
+    overflow-x: hidden;
+}
