@@ -254,7 +254,6 @@ export class SoffitApiService {
                     var result : GrammarResponse = new GrammarResponse();
                     result.graph = r.graph
                     result.iteration = r.iteration
-                    console.log( r )
                     if ( r.message == "Stopped due to iteration limit" ) {
                         result.stopped = false
                     } else {

@@ -1,6 +1,6 @@
 import { Component, OnInit, ViewChild, Input } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { GraphOutputComponent } from '../graph-output/graph-output.component'
+import { SoffitTextareaComponent } from '../soffit-textarea/soffit-textarea.component'
 import { debounceTime } from 'rxjs/operators';
 
 @Component({
@@ -14,31 +14,37 @@ export class GraphRuleComponent implements OnInit {
     constructor() { }
 
     @Input() show_edit : boolean
-    
-    rule_left = new FormControl("")
-    rule_right = new FormControl("")
 
+    @ViewChild( 'left_text' ) input_left: SoffitTextareaComponent;
+    @ViewChild( 'right_text' ) input_right : SoffitTextareaComponent;
+    @ViewChild( 'left') output_left : GraphOutputComponent;
+    @ViewChild( 'right') output_right : GraphOutputComponent;
+
+    top_row : string = "1 / span 1";
+    bottom_row : string = "2 / span 1";
+    
     setRule( left : string, right : string ) {
-        this.rule_left.setValue( left )
-        this.rule_right.setValue( right )
+        this.input_left.setText( left )
+        this.input_right.setText( right )
     }
 
     getLeft() : string {
-        return this.rule_left.value
+        return this.input_left.getText()
     }
 
     getRight() : string {
-        return this.rule_right.value
+        return this.input_right.getText()
     }
     
-    @ViewChild('left') output_left : GraphOutputComponent;
-    @ViewChild('right') output_right : GraphOutputComponent;
 
     ngOnInit(): void {
-        this.rule_left.valueChanges
+    }
+
+    ngAfterViewInit() : void {
+        this.input_left.textObserver()
             .pipe( debounceTime( 500 ) )
             .subscribe( newValue => this.output_left.soffitGraph( newValue ) );
-        this.rule_right.valueChanges
+        this.input_right.textObserver()
             .pipe( debounceTime( 500 ) )
             .subscribe( newValue => this.output_right.soffitGraph( newValue ) );
     }

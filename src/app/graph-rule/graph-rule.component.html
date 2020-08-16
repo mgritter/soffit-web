@@ -1,11 +1,15 @@
-<table width="100%">
-  <tr *ngIf="show_edit">
-    <td><input type="textarea" rows="1" cols="40" [formControl]="rule_left"></td>
-    <td><input type="textarea" rows="1" cols="40" [formControl]="rule_right"></td>
-  </tr>
-  <tr>
-    <td><app-graph-output #left [show_node_names]=true></app-graph-output></td>
-    <td><app-graph-output #right [show_node_names]=true></app-graph-output></td>
-  </tr>
-</table>
+<div style="display: grid; grid-template-columns: auto auto; width: 100%">
+<div class="left_text" [style.grid_row]="top_row">
+  <app-soffit-textarea #left_text></app-soffit-textarea>
+</div>
+<div class="right_text" [style.grid_row]="top_row">
+  <app-soffit-textarea #right_text></app-soffit-textarea>
+</div>
+<div class="left_graph" [style.grid_row]="bottom_row">
+  <app-graph-output #left [show_node_names]=true></app-graph-output>
+</div>
+<div class="right_graph" [style.grid_row]="bottom_row">
+  <app-graph-output #right [show_node_names]=true></app-graph-output>
+</div>
+</div>
 

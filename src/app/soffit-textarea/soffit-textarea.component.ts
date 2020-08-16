@@ -36,6 +36,10 @@ export class SoffitTextareaComponent implements OnInit {
     setText( newValue : string ) {
         this.text.setValue( newValue );
     }
+
+    getText() : string {
+        return this.text.value
+    }
     
     textObserver() {
         return this.text.valueChanges        

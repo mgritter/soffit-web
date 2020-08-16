@@ -1,3 +1,15 @@
-input {
-    width: 95%
+div.left_text {
+    grid-column: 1 / span 1;
+}
+
+div.right_text {
+    grid-column: 2 / span 1;
+}
+
+div.left_graph {
+    grid-column: 1 / span 1;
+}
+
+div.right_graph {
+    grid-column: 2 / span 1;
 }
