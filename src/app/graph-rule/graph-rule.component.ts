@@ -9,6 +9,16 @@ class Rule {
     init : boolean;
 };
 
+function compareByIndex( a, b ) {
+    if ( a.index < b.index ) {
+        return -1;
+    }
+    if ( a.index > b.index ) {
+        return 1;
+    }
+    return 0;
+}
+
 @Component({
   selector: 'app-graph-rule',
   templateUrl: './graph-rule.component.html',
@@ -67,6 +77,12 @@ export class GraphRuleComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    connect( text : SoffitTextareaComponent, graph : GraphOutputComponent ) : void {
+        text.textObserver()
+            .pipe( debounceTime( 500 ) )
+            .subscribe( newVal => graph.soffitGraph( newVal ) );
+    }
+        
     childChanged() : void {
         if ( this.input_left.length != this.input_right.length ||
              this.input_left.length != this.output_left.length ||
@@ -77,18 +93,26 @@ export class GraphRuleComponent implements OnInit {
         }
 
         var il = this.input_left.toArray();
+        il.sort( compareByIndex )
         var ir = this.input_right.toArray();
+        ir.sort( compareByIndex )
         var ol = this.output_left.toArray();
+        ol.sort( compareByIndex )
         var or = this.output_right.toArray();
-        for ( var i in this.rules ) {
+        or.sort( compareByIndex )
+        for ( var i : number = 0; i < this.rules.length; i++ ) {
             if ( !this.rules[i].init ) {
                 // console.log( "Uninitialized rule: " + i );
-                il[i].textObserver()
-                    .pipe( debounceTime( 500 ) )
-                    .subscribe( newVal => ol[i].soffitGraph( newVal ) );
-                ir[i].textObserver()
-                    .pipe( debounceTime( 500 ) )
-                    .subscribe( newVal => or[i].soffitGraph( newVal ) );
+                if ( i != il[i].index ||
+                     i != ir[i].index ||
+                     i != ol[i].index ||
+                     i != or[i].index ) {
+                    console.log( "Mismatched children for index " + i );
+                    return;
+                }
+                // Need to create a new function scope for the closure.
+                this.connect( il[i], ol[i] );
+                this.connect( ir[i], or[i] );
                 ol[i].soffitGraph( il[i].graph );
                 or[i].soffitGraph( ir[i].graph );
                 this.rules[i].init = true;

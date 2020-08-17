@@ -15,7 +15,10 @@ import { debounceTime } from 'rxjs/operators';
 export class SoffitTextareaComponent implements OnInit {
 
     constructor() { }
-    
+
+    // Use to find the right components in the rules array
+    @Input() index : number = 999;
+
     text_class : string = "editable";
     rows : number = 1;
     max_rows : number = 5;

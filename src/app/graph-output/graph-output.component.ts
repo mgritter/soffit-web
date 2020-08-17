@@ -11,6 +11,9 @@ declare var d3: any;
 export class GraphOutputComponent implements OnInit {
     constructor( private soffit : SoffitApiService ) { }
 
+    // Use to find the right components in the rules array
+    @Input() index : number = 999;
+    
     show_error = false
     error_text = ""
     error_code = ""
