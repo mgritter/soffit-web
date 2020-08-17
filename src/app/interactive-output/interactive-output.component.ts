@@ -151,5 +151,23 @@ export class InteractiveOutputComponent implements OnInit {
                 }
             } )
     }
-    
+
+    saveAsSvg() {
+        var filename = "graph-output.svg";
+        // FIXME: add an accessor?
+        var data = this.result.output_div.nativeElement.innerHTML;
+        var blob = new Blob( [data], {type: 'image/svg+xml'} );
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob( blob, filename );
+        } else {
+            var elem = window.document.createElement( 'a' );
+            elem.href = window.URL.createObjectURL( blob );
+            elem.download = filename;
+            document.body.appendChild( elem );
+            elem.click();
+            document.body.removeChild( elem );
+            window.URL.revokeObjectURL( elem.href );
+        }
+
+    }
 }

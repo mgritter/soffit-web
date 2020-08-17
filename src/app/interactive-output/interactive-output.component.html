@@ -19,7 +19,10 @@
   </div>
 </div>
 <div [class]="result_graph_class">
-  <h3>Result after {{iteration}} iterations</h3>
+  <div>
+    <h3 style="display: inline-block; padding-right: 5px;">Result after {{iteration}} iterations</h3>
+    <button (click)="saveAsSvg()">Save as SVG</button>
+  </div>
   <app-graph-output #result [show_node_names]=false></app-graph-output>
   <div *ngIf="debugGraph">
     {{resultGraphSoffit}}
