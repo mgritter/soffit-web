@@ -11,10 +11,17 @@ div.outer {
     width: 100%;
 }
 
-div.controls {
+div.left_controls {
     grid-row-start: 1;
     grid-row-end: 2;
     grid-column-start: 1;
+    grid-column-end: 2;
+}
+
+div.right_controls {
+    grid-row-start: 1;
+    grid-row-end: 2;
+    grid-column-start: 2;
     grid-column-end: 3;
 }
 

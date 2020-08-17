@@ -1,15 +1,20 @@
-<div style="display: grid; grid-template-columns: auto auto; width: 100%">
-<div class="left_text" [style.grid_row]="top_row">
-  <app-soffit-textarea #left_text></app-soffit-textarea>
+<div class="container">
+  <div *ngFor="let r of rules; index as i" class="delete" style="grid-row: {{2*i+1}}/span 1;">
+    <button class="delete" (click)="deleteRule(i)">X</button>
+  </div>  
+  <div *ngFor="let r of rules; index as i" class="left_text" style="grid-row: {{2*i+1}}/span 1;">
+    <app-soffit-textarea #left_text [graph]="r.left" (graphChange)="setLeft(i)"></app-soffit-textarea>
+  </div>
+  <div *ngFor="let r of rules; index as i" class="right_text" style="grid-row: {{2*i+1}}/span 1;">
+    <app-soffit-textarea #right_text [graph]="r.right" (graphChange)="setRight(i)"></app-soffit-textarea>
+  </div>
+  <div *ngFor="let r of rules; index as i" class="left_graph" style="grid-row: {{2*i+2}}/span 1;">
+    <app-graph-output #left [show_node_names]=true></app-graph-output>
+  </div>
+  <div *ngFor="let r of rules; index as i" class="right_graph" style="grid-row: {{2*i+2}}/span 1;">
+    <app-graph-output #right [show_node_names]=true></app-graph-output>
+  </div>
+  <div class="add" style="grid-row: {{2*rules.length+1}}">
+    <button class="add" (click)="addRule('','')">+</button>
+  </div>
 </div>
-<div class="right_text" [style.grid_row]="top_row">
-  <app-soffit-textarea #right_text></app-soffit-textarea>
-</div>
-<div class="left_graph" [style.grid_row]="bottom_row">
-  <app-graph-output #left [show_node_names]=true></app-graph-output>
-</div>
-<div class="right_graph" [style.grid_row]="bottom_row">
-  <app-graph-output #right [show_node_names]=true></app-graph-output>
-</div>
-</div>
-

@@ -36,11 +36,17 @@ export class GraphOutputComponent implements OnInit {
         // console.log( "To object: " + this.output_div + " " + this.output_div.nativeElement )
         var myElement = this
 
+        if ( graph.trim() == "" ) {
+            // Don't attempt to plot the empty string.
+            this.show_error = true;
+            this.error_html = "";
+            return;
+        }
         this.show_error = false
         var viz = d3.select( this.output_div.nativeElement ).graphviz();
         viz.onerror( (err) => {
-            this.show_error = true
-            this.error_html = err
+            this.show_error = true;
+            this.error_html = "Graphviz error: " + err;
             console.log( "Dot parsing error: " + err )
         })
         try {
@@ -76,7 +82,7 @@ export class GraphOutputComponent implements OnInit {
             })
         } catch ( err ) {
             this.show_error = true
-            this.error_html = "" + err
+            this.error_html = "" + err + "<code>" + graph + "</code>"
         }
     }
 }

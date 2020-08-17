@@ -89,6 +89,11 @@ export class GrammarResponse {
     iteration: number;
 }
 
+function escape_quotes( x: string ) : string {
+    // FIXME: this isn't very good
+    return x.replace( /"/g, '\\"' );
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -185,11 +190,11 @@ export class SoffitApiService {
             var attributes = "";
             if ( show_ids ) {
                 // TODO: quote tag?
-                attributes = '[label="' + mergedNodes + "\\n" + n.tag + '"]';
+                attributes = '[label="' + mergedNodes + "\\n" + escape_quotes( n.tag ) + '"]';
             } else if ( n.tag.includes( "=" ) ) {
                 attributes = '[' + n.tag + ']';
             } else {
-                attributes = '[label="' + n.tag + '"]';
+                attributes = '[label="' + escape_quotes( n.tag ) + '"]';
             }
             elements.push( '"' + n.id + '" ' + attributes )
         }
@@ -246,6 +251,8 @@ export class SoffitApiService {
         req.grammar = grammar
         req.iterations = num_iterations
         req.graph = g
+        // console.log( JSON.stringify( req ) );
+        
         var httpObservable = this.http.post<ExecuteResponse>( this.api_url, req )
                                     
         return new Observable<GrammarResponse>( subscriber => {

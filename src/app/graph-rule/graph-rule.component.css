@@ -1,15 +1,39 @@
-div.left_text {
+div.container {
+    display: grid;
+    grid-template-columns: 24pt auto auto;
+    width: 100%;
+}
+
+div.delete {
     grid-column: 1 / span 1;
+}
+
+button.delete {
+    color: black;
+    background-color: red;
+}
+
+div.add {
+    grid-column: 1 / span 1;
+}
+
+button.add {
+    color: white;
+    background-color: green;
+}
+
+div.left_text {
+    grid-column: 2 / span 1;
 }
 
 div.right_text {
-    grid-column: 2 / span 1;
+    grid-column: 3 / span 1;
 }
 
 div.left_graph {
-    grid-column: 1 / span 1;
+    grid-column: 2 / span 1;
 }
 
 div.right_graph {
-    grid-column: 2 / span 1;
+    grid-column: 3 / span 1;
 }

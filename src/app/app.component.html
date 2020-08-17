@@ -1,12 +1,15 @@
 <h2>{{title}}</h2>
 
-<h3>Rules</h3>
+<div>
+  <h3 style="display: inline-block;">Rules</h3>
+  <button (click)="saveAsJson()">Save as JSON</button>
+</div>
 
 <app-graph-rule [show_edit]=true></app-graph-rule>
 
 <hr/>
 
-<app-interactive-output></app-interactive-output>
+<app-interactive-output [grammarSource]="rule"></app-interactive-output>
 <!--
 <app-graph-output #output [show_node_names]=false></app-graph-output>
 -->

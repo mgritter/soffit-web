@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, Input } from '@angular/core';
 import { GraphOutputComponent } from '../graph-output/graph-output.component'
 import { SoffitTextareaComponent } from '../soffit-textarea/soffit-textarea.component'
 import { SoffitApiService, GrammarResponse } from '../soffit-api.service'
@@ -23,14 +23,11 @@ export class InteractiveOutputComponent implements OnInit {
     @ViewChild('result') result : GraphOutputComponent;
     @ViewChild('outer_div') outer_div;
 
-    initStartGraph : string = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
-    startGraphSoffit : string  = "";
+    startGraphSoffit : string = "";
     resultGraphSoffit : string  = "";
     debugGraph : boolean = false;
-    
-    grammar = {
-        "N[leaf]" : "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2"
-    }
+
+    @Input() grammarSource;
     
     plus_button_class = "plus_enabled";
     starting_graph_class = "starting_graph_expanded";
@@ -105,7 +102,9 @@ export class InteractiveOutputComponent implements OnInit {
         this.result.max_width = max_width;
         
         let component = this;
-        this.api.runGrammar( this.grammar, this.resultGraphSoffit, num_steps)
+        // FIXME: warn if grammar changed while running.
+        var grammar = this.grammarSource.generateGrammar();
+        this.api.runGrammar( grammar, this.resultGraphSoffit, num_steps)
             .subscribe( {
                 next( g : GrammarResponse ) {
                     component.resultGraphSoffit = g.graph;
@@ -143,14 +142,14 @@ export class InteractiveOutputComponent implements OnInit {
         this.start_edit.textObserver()
             .pipe( debounceTime( 500 ) )
             .subscribe( newVal => {
+                // FIXME: startGraphSoffit should already match the new value?
                 c.startGraphSoffit = newVal;
                 c.start.soffitGraph( this.startGraphSoffit );
-                if ( c.iteration == 0 ) {
+                if ( c.iteration == 0 && !c.start.show_error ) {
                     // Only update the result if we haven't advanced yet.
                     c.setResultToStart();
                 }
             } )
-
-        this.start_edit.setText( c.initStartGraph );
     }
+    
 }

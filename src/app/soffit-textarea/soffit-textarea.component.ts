@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { debounceTime } from 'rxjs/operators';
 
@@ -19,9 +19,19 @@ export class SoffitTextareaComponent implements OnInit {
     text_class : string = "editable";
     rows : number = 1;
     max_rows : number = 5;
-    
+
     text = new FormControl( "" );
 
+    @Input() get graph() : string {
+        return this.text.value;
+    }
+    set graph( newValue : string ) {
+        // console.log( "New graph: " + newValue );
+        this.text.setValue( newValue );
+    }
+    
+    @Output() graphChange  = new EventEmitter<string>();
+    
     onValueChanged( newValue ) {
         var rows = newValue.split( "\n" );
         if ( rows.length != this.rows ) {
@@ -31,16 +41,9 @@ export class SoffitTextareaComponent implements OnInit {
                 this.rows = rows.length;
             }
         }
+        this.graphChange.emit( newValue );
     }
 
-    setText( newValue : string ) {
-        this.text.setValue( newValue );
-    }
-
-    getText() : string {
-        return this.text.value
-    }
-    
     textObserver() {
         return this.text.valueChanges        
     }

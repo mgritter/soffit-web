@@ -1,6 +1,6 @@
 import { Component, OnInit, Injectable, ViewChild } from '@angular/core';
 import { SoffitApiService, GrammarResponse } from './soffit-api.service'
-import { GraphOutputComponent } from './graph-output/graph-output.component'
+import { InteractiveOutputComponent } from './interactive-output/interactive-output.component'
 import { GraphRuleComponent } from './graph-rule/graph-rule.component'
          
 @Component({
@@ -15,8 +15,8 @@ import { GraphRuleComponent } from './graph-rule/graph-rule.component'
 export class AppComponent implements OnInit {
     constructor( private api : SoffitApiService ) {}
     
-    @ViewChild(GraphOutputComponent) output : GraphOutputComponent;
-    @ViewChild(GraphRuleComponent) rule1 : GraphRuleComponent;
+    @ViewChild(InteractiveOutputComponent) output : InteractiveOutputComponent;
+    @ViewChild(GraphRuleComponent) rule : GraphRuleComponent;
 
     title = 'Soffit Web';
 
@@ -27,19 +27,26 @@ export class AppComponent implements OnInit {
         var left1 = "N[leaf]";
         var right1 = "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2";
 
-        this.rule1.setRule( left1, right1 );
-            
-        var grammar = {}
-        grammar[left1] = right1
-        var graph : string = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z"
-
-/*
-        let out_component = this.output
-        this.api.runGrammar( grammar, graph, 5 ).subscribe( {
-            next( g : GrammarResponse ) {
-                out_component.soffitGraph( g.graph )
-            }
-        } )
-*/
+        this.rule.addRule( left1, right1 );
+        this.output.start_edit.graph = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z";
     }
+
+    saveAsJson() {
+        // Courtesy of stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
+        var filename = "soffit.json";
+        var data = JSON.stringify( this.rule.generateGrammar(), null, 2 );
+        var blob = new Blob( [data], {type: 'text/json'} );
+        if (window.navigator.msSaveOrOpenBlob) {
+            window.navigator.msSaveOrOpenBlob( blob, filename );
+        } else {
+            var elem = window.document.createElement( 'a' );
+            elem.href = window.URL.createObjectURL( blob );
+            elem.download = filename;
+            document.body.appendChild( elem );
+            elem.click();
+            document.body.removeChild( elem );
+            window.URL.revokeObjectURL( elem.href );
+        }
+    }
+
 }
