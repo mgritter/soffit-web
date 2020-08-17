@@ -12,10 +12,25 @@ export class GraphOutputComponent implements OnInit {
     constructor( private soffit : SoffitApiService ) { }
 
     show_error = false
-    error_html = ""
-    
+    error_text = ""
+    error_code = ""
+    graph_display = "inline-block";
     @ViewChild('output_div') output_div;
 
+    clearError() {
+        this.show_error = false;
+        this.error_text = "";
+        this.error_code = "";
+        this.graph_display = "inline-block";
+    }
+
+    raiseError(txt, code) {
+        this.show_error = true;
+        this.error_text = txt;
+        this.error_code = code;
+        this.graph_display = "none";
+    }
+    
     // This really only works with brackets, as a normal
     // HTML attribute it's always a string, and all strings
     // are true.
@@ -34,23 +49,21 @@ export class GraphOutputComponent implements OnInit {
     soffitGraph( graph : string ) : void {
         // console.log( "Rendering " + graph )
         // console.log( "To object: " + this.output_div + " " + this.output_div.nativeElement )
-        var myElement = this
+        var myElement = this;
 
         if ( graph.trim() == "" ) {
             // Don't attempt to plot the empty string.
-            this.show_error = true;
-            this.error_html = "";
+            this.clearError();
             return;
         }
         this.show_error = false
         var viz = d3.select( this.output_div.nativeElement ).graphviz();
-        viz.onerror( (err) => {
-            this.show_error = true;
-            this.error_html = "Graphviz error: " + err;
-            console.log( "Dot parsing error: " + err )
-        })
         try {
             let dot = this.soffit.soffitToDot( graph, this.show_node_names );
+            viz.onerror( (err) => {
+                this.raiseError( "Graphviz error: " + err, "" );
+                console.log( "Dot parsing error: " + err, dot )
+            })
             // console.log( "DOT file: " + dot );
             if ( viz.data() != null ) { 
                 viz.resetZoom();
@@ -59,6 +72,7 @@ export class GraphOutputComponent implements OnInit {
             viz.width( null );
             viz.height( null );
             viz.dot( dot, function() {
+                myElement.clearError();
                 var svg = viz.data()
                 var svg_width = Number( svg.attributes["width"].split( "pt" )[0] ) * 1.33;
                 var svg_height = Number( svg.attributes["height"].split( "pt" )[0] ) * 1.33;
@@ -81,8 +95,9 @@ export class GraphOutputComponent implements OnInit {
                 }
             })
         } catch ( err ) {
-            this.show_error = true
-            this.error_html = "" + err + "<code>" + graph + "</code>"
+            // FIXME: we care about showing this for the returned graphs,
+            // but not user-entered ones.
+            this.raiseError( "Soffit parse error: " + err, "" );
         }
     }
 }

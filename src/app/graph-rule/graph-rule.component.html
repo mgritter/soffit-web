@@ -9,10 +9,10 @@
     <app-soffit-textarea #right_text [graph]="r.right" (graphChange)="setRight(i)"></app-soffit-textarea>
   </div>
   <div *ngFor="let r of rules; index as i" class="left_graph" style="grid-row: {{2*i+2}}/span 1;">
-    <app-graph-output #left [show_node_names]=true></app-graph-output>
+    <app-graph-output #left [show_node_names]=true [max_width]=800></app-graph-output>
   </div>
   <div *ngFor="let r of rules; index as i" class="right_graph" style="grid-row: {{2*i+2}}/span 1;">
-    <app-graph-output #right [show_node_names]=true></app-graph-output>
+    <app-graph-output #right [show_node_names]=true [max_width]=800></app-graph-output>
   </div>
   <div class="add" style="grid-row: {{2*rules.length+1}}">
     <button class="add" (click)="addRule('','')">+</button>

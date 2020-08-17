@@ -1,3 +1,3 @@
-<div #output_div class="bordered_graph" [style.display]="show_error ? 'none' : 'inline-block'"></div>
-<div class="parse_error" *ngIf="show_error">{{error_html}}</div>
+<div #output_div class="bordered_graph" [style.display]="graph_display"></div>
+<div class="parse_error" *ngIf="show_error">{{error_text}} <code>{{error_code}}</code></div>
 

@@ -18,17 +18,21 @@ export class AppComponent implements OnInit {
     @ViewChild(InteractiveOutputComponent) output : InteractiveOutputComponent;
     @ViewChild(GraphRuleComponent) rule : GraphRuleComponent;
 
+    deferred_rule : GraphRuleComponent = null;
     title = 'Soffit Web';
 
     ngOnInit(): void {
     }
     
     ngAfterViewInit() : void {
-        var left1 = "N[leaf]";
-        var right1 = "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2";
+        setTimeout( () => {
+            var left1 = "N[leaf]";
+            var right1 = "N[internal]; L1[leaf]; L2[leaf]; N->L1; N->L2";
 
-        this.rule.addRule( left1, right1 );
-        this.output.start_edit.graph = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z";
+            this.rule.addRule( left1, right1 );
+            this.output.start_edit.graph = "X[root]; Y[leaf]; Z[leaf]; X->Y; X->Z";
+            this.deferred_rule = this.rule;
+        } );
     }
 
     saveAsJson() {
