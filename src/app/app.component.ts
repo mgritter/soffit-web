@@ -39,7 +39,11 @@ export class AppComponent implements OnInit {
     saveAsJson() {
         // Courtesy of stackoverflow.com/questions/3665115/how-to-create-a-file-in-memory-for-user-to-download-but-not-through-server
         var filename = "soffit.json";
-        var data = JSON.stringify( this.rule.generateGrammar(), null, 2 );
+        var grammar = this.rule.generateGrammar();
+        grammar["version"] = "0.1";
+        // FIXME: run this through soffitToSoffit?
+        grammar["start"] = this.output.startGraphSoffit;
+        var data = JSON.stringify( grammar, null, 2 );
         var blob = new Blob( [data], {type: 'text/json'} );
         if (window.navigator.msSaveOrOpenBlob) {
             window.navigator.msSaveOrOpenBlob( blob, filename );
@@ -78,6 +82,13 @@ export class AppComponent implements OnInit {
             // FIXME: add a method to dothis
             this.rule.rules = [];
             for ( var left in grammar ) {
+                if ( left == "version" ) {
+                    continue;
+                }
+                if ( left == "start" ) {
+                    this.output.start_edit.graph = grammar[left];
+                    continue;
+                }
                 if ( Array.isArray( grammar[left] ) ) {
                     for ( var right of grammar[left] ) {
                         this.rule.addRule( left, right);
@@ -86,6 +97,7 @@ export class AppComponent implements OnInit {
                     this.rule.addRule( left, grammar[left] );
                 }
             }
+            this.output.reset_graph();
         } else {
             console.log( "Bad grammar: " + grammar );
         }
