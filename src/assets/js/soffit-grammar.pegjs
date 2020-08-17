@@ -2,7 +2,7 @@
 // Permits newlines, unlike the normal Soffit which is embedded in JSON
 // and only allows semicolons.
 
-Graph = first:(Edge/Node) rest:GraphElement* Separator? {
+Graph = Separator first:(Edge/Node) rest:GraphElement* Separator? {
  return [first].concat( rest )
 }
 
