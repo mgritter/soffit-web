@@ -17,6 +17,7 @@ export class AppComponent implements OnInit {
     
     @ViewChild(InteractiveOutputComponent) output : InteractiveOutputComponent;
     @ViewChild(GraphRuleComponent) rule : GraphRuleComponent;
+    @ViewChild("fileInput") fileInput;
 
     deferred_rule : GraphRuleComponent = null;
     title = 'Soffit Web';
@@ -50,6 +51,43 @@ export class AppComponent implements OnInit {
             elem.click();
             document.body.removeChild( elem );
             window.URL.revokeObjectURL( elem.href );
+        }
+    }
+
+    loadJsonStart() {
+        this.fileInput.nativeElement.click()
+    }
+    
+    loadJson() {
+        var c = this;
+        var file = this.fileInput.nativeElement.files[0];
+        var reader = new FileReader();
+        reader.onload = function (e) { c.loadJsonFinish(e); }
+        reader.onerror = function (e) {
+            // FIXME; find a place for this on the page
+            alert( "Failed to read file." );
+            console.log( "File error: " + e );
+        }
+        reader.readAsText( file );
+    }
+
+    loadJsonFinish( e ) {
+        var text = e.target.result;
+        var grammar = JSON.parse( text );
+        if ( Object.keys( grammar ).length > 0 ) {
+            // FIXME: add a method to dothis
+            this.rule.rules = [];
+            for ( var left in grammar ) {
+                if ( Array.isArray( grammar[left] ) ) {
+                    for ( var right of grammar[left] ) {
+                        this.rule.addRule( left, right);
+                    } 
+                } else {
+                    this.rule.addRule( left, grammar[left] );
+                }
+            }
+        } else {
+            console.log( "Bad grammar: " + grammar );
         }
     }
 
