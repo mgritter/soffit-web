@@ -1,7 +1,11 @@
-<h2>{{title}}</h2>
+<div class="titlebar">
+  <div class="titlebar1"><span class="main_title">Soffit</span></div>
+  <div class="titlebar2"><a href="" class="title_link">What is Soffit?</a></div>
+  <div class="titlebar3"><a href="http://github.com/mgritter/soffit" class="title_link" target="_blank">Soffit on GitHub</a></div>
+</div>
 
 <div>
-  <h3 style="display: inline-block;">Rules</h3>
+  <h3 style="display: inline-block; padding-right: 5pt;">Rules</h3>
   <button (click)="saveAsJson()">Save as JSON</button>
   <button (click)="loadJsonStart()">Load JSON</button>
   <input type="file" #fileInput style="display: none;" (change)="loadJson()">

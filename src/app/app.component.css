@@ -1,0 +1,40 @@
+div.titlebar {
+    background-color: #eeeeee;
+    width: 100%;
+    display: grid;
+    grid-template-columns: auto 50px auto 50px auto;
+}
+
+div.titlebar1 {
+    grid-column: 1/ span 1;
+}
+
+span.main_title {
+    font-size: 30pt;
+    font-family: sans-serif;
+}
+
+div.titlebar2 {
+    grid-column: 3/ span 1;
+    position: relative;
+}
+
+a.title_link {
+    display: inline-block;
+    vertical-align: middle;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-right: -50%;
+    transform: translate(-50%, -50%);
+    background: #dddddd;
+    color: #0000ff;
+    padding: 5px 10px;
+    text-decoration: none;
+}
+
+div.titlebar3 {
+    grid-column: 5/ span 1;
+    position: relative;
+}
+
