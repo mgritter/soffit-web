@@ -1,0 +1,107 @@
+<p><a href="https://github.com/mgritter/soffit">Soffit</a> is a nondeterministic
+  <a href="https://en.wikipedia.org/wiki/Graph_rewriting">graph grammar</a> engine that implements
+  <a href="https://steemit.com/mathematics/@markgritter/double-pushouts-on-graphs">double-pushout (DPO)</a> rewriting.</p>
+<p>Basically, it's pattern matching. Take a graph, find a subgraph of its that matches some pattern,
+  and alter the graph by adding or deleting elements.</p>
+
+<h2>Introduction to Soffit syntax and semantics</h2>
+
+<p>Soffit is an attempted homage to <a href="https://tracery.io/">Tracery</a>, and uses a JSON input format.
+  Graphs are written as strings in a variant of the <a href="https://www.graphviz.org/doc/info/lang.html" rel="nofollow">dot</a> language.</p>
+
+<p>Each node or edge in the graph may have a textual tag attached.
+  A node is written as an identifier <code>X;</code> or an identifier followed by a tag in square
+  brackets <code>X[tag]</code>. An edge is
+  written as a pair of node identifiers with either <code>--</code>, <code>&lt;-</code>,
+  or <code>-&gt;</code> to identify the direction of the edge.  If all edges are undirected
+  (<code>--</code>) then the graph will be undirected as well.  An edge may be followed by a tag in
+  square brackets, and multiple edges may be chained together.  For example, the graph
+  <code>X-&gt;Y&lt;-Z [tag];</code> identifies two edges, one from <code>X</code> to <code>Y</code>
+  and one from <code>Z</code> to <code>Y</code>, both of which
+  have the tag <code>tag</code>.</p>
+
+<p>Graph rewrite rules are JSON name-value pairs consisting of graph descriptions on each side.  For example, the rewrite rule</p>
+<pre><code>    "L[line]; X[6]; L-&gt;X[next_char]" : 
+    "L[started_line]; X[6]; L-&gt;X[next_char]; C[div_position]; C-&gt;X",
+</code></pre>
+
+<p>says to find a node with tag <code>line</code>, a node with tag <code>6</code>, and an edge
+ between them with tag <code>next_char</code>.  The result of appying this rule is to
+  change the tag to <code>started_line</code>, introduce a new node with tag <code>div_position</code>,
+  and create an edge from the new node to the node with tag <code>6</code>.  Any
+  node or edge mentioned in the "before" part of the rule but not in the "after"
+  part of the rule is deleted.</p>
+
+<p>In this web-based editor the left and right hand sides of a rule appear as separate text boxes, and
+  you may separate the components of a graph with newlines for ease of reading.</p>
+
+<p>Soffit performs "injective" mapping, so that each identifier in the rule must bind to a distinct
+  node.</p>
+
+<p>By convention, Soffit node names are <code>CAPITALIZED</code> and tag names are <code>lowercase</code>,
+  but Soffit permits a wide range of characters to be used in either label type, including emoji. You can
+  experiment with Soffit's graph language in this text box.  (Sorry, parsing errors are a work in
+  progress and are not particularly helpful. If you see a lot of junk characters it's because an identifer
+  is expected.)</p>
+
+<div>
+  <app-soffit-textarea #example_edit [(graph)]="exampleGraphSoffit" ></app-soffit-textarea>
+</div>
+<div>
+  <app-graph-output #example [show_node_names]=true [max_width]=400></app-graph-output>
+</div>
+
+The graph output allows you to pan and zoom using the mouse and scroll wheel.
+
+<h3>Merges and dangling edges</h3>
+
+<p>A nonstandard addition to the Dot syntax is a mechanism to specify merging of nodes.
+  With double-pushout semantics, merges are important because they
+  allow preservation of edges not specified in the rewrite rule.  DPO rewrite rules do not match in
+  cases where their action would leave an edge "dangling",
+  if one end is deleted but the entire edge is not specified for deletion.</p>
+
+<p>For example, the rewrite rule</p>
+<pre><code>    "A[foo]; B[bar]; A--B" :
+    "A[foo]"    
+</code></pre>
+<p>will delete node <code>B</code> only if it has no other edges than the one to <code>A</code>.
+  To preserve <code>B</code>'s edges and make the rule more broadly applicable, we can
+specify <code>A^B</code> (A merge B) in the production of a rule.</p>
+<pre><code>    "A[foo]; B[bar]; A--B" :
+    "A^B[foo]"    
+</code></pre>
+<p>The two nodes will be merged into one, and any edge adjacent to either will be preserved, with one
+  exception.  Because Soffit implements simple graphs, not multigraphs, a rewrite rule that would
+  silently merge two edges (say, in the graph <code>A--B--C--A</code>) will not match.</p>
+
+<h3>Nondeterminism</h3>
+
+<p>Soffit's matching operates as follows:</p>
+<ul>
+<li>For each iteration, the production rules are shuffled so that they are attempted in random order.</li>
+<li>If the rule has multiple right-hand sides, then they are attempted in random order as well.</li>
+<li>The first production rule with a match is applied. The match is chosen uniformly form all matches present in the graph, for that production.</li>
+</ul>
+<p>This means it is computationally expensive to build determinstic grammars where only one rule can fire
+  at a time; Soffit is currently not smart enough to tell if this is the case.  Purely deterministic
+  grammars will thus have to check about half the productions to find one that works.
+  Productions which have a large number of possible matches (particularly due to combinatorial explosions)
+  are also inefficient; the number of matches and the time spent enumerating matches are capped to mitigate
+  this.</p>
+
+<h2>Soffit and Graphviz</h2>
+
+<p>Soffit uses <a href="https://graphviz.org/">Graphviz</a> to lay out the graphs as SVG files.
+Normally, the tag is used as a label in each node or edge. However, if the label contains an "=" sign,
+it is passed to Graphviz unchanged.  This allows you to specify
+  <a href="https://graphviz.org/doc/info/attrs.html">node and edge attributes</a> that control the display
+  of the graph, for example changing the color or shape.</p>
+
+<h2>Soffit examples</h2>
+
+<p><a href="https://github.com/mgritter/soffit/tree/master/doc/examples">Examples from the Soffit source code</a>.  You can download these and upload them to the web UI.</p>
+
+<p><a href="https://github.com/mgritter/aoc-soffit/">Advent of Code solutions is Soffit</a>.  These cannot be run as-is in the web UI as they required some framework to provide input.</p>
+
+<a routerLink="/grammar">Back to the editor</a>
