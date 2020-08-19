@@ -99,6 +99,11 @@ export class InteractiveOutputComponent implements OnInit {
         if ( this.show_start_graph ) {
             max_width -= this.start.width;
         }
+        if ( max_width < 400 ) {
+            console.log( "Bad max_width: offsetWidth = " + this.outer_div.nativeElement.offsetWidth +
+                         " start.width = " + this.start.width );
+            max_width = 400;
+        }
         this.result.max_width = max_width;
         
         let component = this;

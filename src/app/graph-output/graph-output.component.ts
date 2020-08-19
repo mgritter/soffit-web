@@ -84,10 +84,12 @@ export class GraphOutputComponent implements OnInit {
                 var layout_again = false;
                 if ( myElement.max_width != 0 && svg_width > myElement.max_width ) {
                     viz.width( myElement.max_width );
+                    myElement.width = myElement.max_width;
                     layout_again = true;
                 }
                 if ( myElement.max_height != 0 && svg_height > myElement.max_height ) {
                     viz.height( myElement.max_height );
+                    myElement.height = myElement.max_height;
                     layout_again = true;
                 }
                 if ( layout_again ) {

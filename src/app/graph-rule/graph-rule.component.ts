@@ -63,7 +63,7 @@ export class GraphRuleComponent implements OnInit {
         for ( let r of this.rules ) {
             if ( r.left in g ) {
                 if ( Array.isArray( g[r.left] ) ) {
-                    g[r.left].append( r.right );
+                    g[r.left].push( r.right );
                 } else {
                     g[r.left] = [ g[r.left], r.right ];
                 }
