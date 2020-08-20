@@ -4,6 +4,8 @@ A web front-end to [Soffit](https://github.com/mgritter/soffit), a graph grammar
 It uses [d3-graphviz](https://github.com/magjac/d3-graphviz) to render each rule graph and display the results of executing the graph grammar, and lets 
 users save and load grammars in the Soffit JSON format.
 
+This front-end is live at http://soffit.combinatorium.com/
+
 ## Angular instructions
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 10.0.5.
