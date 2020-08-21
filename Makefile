@@ -8,7 +8,7 @@ deploy-github:
 	cat docs/index.html >> docs/404.html
 
 
-deploy-s3
+deploy-s3:
 	ng build --prod
 	aws --profile soffit s3 cp dist/soffit-web s3://soffit.combinatorium.com --recursive
 
