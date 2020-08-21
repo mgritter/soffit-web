@@ -6,7 +6,9 @@ deploy-github:
 	cp -r dist/github/* docs/
 	echo -e "---\npermalink: /404.html\n---" > docs/404.html
 	cat docs/index.html >> docs/404.html
-
+	git add docs
+	git commit -m "Deploy to docs directory."
+	git push
 
 deploy-s3:
 	ng build --prod
