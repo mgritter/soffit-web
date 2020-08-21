@@ -3,6 +3,17 @@
   <button (click)="saveAsJson()">Save as JSON</button>
   <button (click)="loadJsonStart()">Load JSON</button>
   <input type="file" #fileInput style="display: none;" (change)="loadJson()">
+  <div class="dropdown">
+    <button (click)="openGistPanel()">Load from Gist</button>
+    <div [class]="dropdown_class">
+      <div class="formLine">
+        <button (click)="loadGist()">Load</button>
+        <label>Gist URL or ID:</label>
+        <span><input type="text" class="gist-url" [formControl]="gist_url_text"></span>
+      </div>
+      <p style="color: red;">{{gist_error}}</p>
+    </div>
+  </div>
 </div>
 
 <app-graph-rule [show_edit]=true></app-graph-rule>

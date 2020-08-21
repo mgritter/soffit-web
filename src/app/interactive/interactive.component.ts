@@ -1,6 +1,8 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { InteractiveOutputComponent } from '../interactive-output/interactive-output.component'
 import { GraphRuleComponent } from '../graph-rule/graph-rule.component'
+import { request } from '@octokit/request'
 
 @Component({
   selector: 'app-interactive',
@@ -16,6 +18,52 @@ export class InteractiveComponent implements OnInit {
     @ViewChild("fileInput") fileInput;
     deferred_rule : GraphRuleComponent = null;
 
+    gist_url_text = new FormControl( "" );
+    dropdown_class : string = "dropdown-hidden";
+    gist_open : boolean = false;
+    gist_error : string = "";
+    
+    openGistPanel() {
+        if ( this.gist_open ) {
+            this.gist_open = false;
+            this.dropdown_class = "dropdown-hidden";
+            this.gist_error = "";
+        } else {
+            this.gist_open = true;
+            this.dropdown_class = "dropdown-show";
+            this.gist_error = "";
+        }
+    }
+
+    async loadGist() {
+        try {
+            let url = this.gist_url_text.value;
+            if ( url.trim() == "" ) {
+                this.gist_error = "Please provide a GitHub Gist ID or URL.";
+                return;
+            }
+            // Cheap way, doesn't validate URL
+            let tokens = url.split( "/" );
+            let id = tokens[tokens.length-1];
+                
+            let result = await request( "GET /gists/{gist_id}", {
+                gist_id : id
+            } );
+
+            if ( result.status != 200 ) {
+                this.gist_error = "HTTP error: " + result.status 
+            } else {
+                for ( var f in result.data.files ) {                
+                    this.loadJsonText( result.data.files[f].content );
+                    this.openGistPanel(); // Close it
+                    return;
+                }
+            }
+        } catch ( err ) {                 
+            this.gist_error = err;
+        }
+    }
+    
     ngOnInit(): void {
     }
     
@@ -71,9 +119,13 @@ export class InteractiveComponent implements OnInit {
 
     loadJsonFinish( e ) {
         var text = e.target.result;
+        this.loadJsonText( text );
+    }
+    
+    loadJsonText( text ) {
+        // FIXME: better error handling
         var grammar = JSON.parse( text );
         if ( Object.keys( grammar ).length > 0 ) {
-            // FIXME: add a method to dothis
             this.rule.rules = [];
             for ( var left in grammar ) {
                 if ( left == "version" ) {
